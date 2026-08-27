@@ -1,0 +1,38 @@
+{
+  "name": "resume-skill-arena",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "validate:changeset": "tsx src/cli/validate-changeset.ts",
+    "freeze:baseline": "tsx src/cli/freeze-baseline.ts",
+    "verify:baseline": "tsx src/cli/verify-baseline.ts",
+    "run:providers": "tsx src/cli/run-providers.ts",
+    "decision": "tsx src/cli/decision.ts",
+    "dev:api": "tsx src/local/server.ts",
+    "dev:local": "node scripts/dev-local.mjs",
+    "check:runtime": "node scripts/check-runtime.mjs",
+    "clean:qa": "node scripts/clean-qa-artifacts.mjs",
+    "privacy:scan": "node scripts/privacy-scan.mjs",
+    "verify:release": "npm run privacy:scan && npm test && npm run typecheck && npm run build && npm --prefix ui run build && npm --prefix ui test"
+  },
+  "dependencies": {
+    "@openai/codex-sdk": "^0.149.0",
+    "@xmldom/xmldom": "^0.9.11",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "0.1",
+  "skill": {
+    "id": "resume-optimizer",
+    "name": "Resume Optimizer",
+    "version": "1.0.0",
+    "description": "基于冻结简历和 JD 生成有证据的逐块简历改写建议。",
+    "source": {
+      "type": "LOCAL",
+      "uri": "skills/resume-optimizer",
+      "revision": "local-v1",
+      "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "license": "UNKNOWN"
+    }
+  },
+  "classification": {
+    "kind": "RESUME_REWRITE",
+    "capabilities": ["BLOCK_LEVEL_CHANGES", "JD_MATCHING", "STAR_REWRITE"]
+  },
+  "compatibility": {
+    "hosts": [
+      {
+        "name": "CODEX"
+      }
+    ],
+    "operatingSystems": ["WINDOWS"],
+    "dependencies": []
+  },
+  "contract": {
+    "requestVersions": ["0.1"],
+    "resumeAstVersions": ["0.1"],
+    "jobAstVersions": ["0.1"],
+    "outputMode": "NATIVE",
+    "changeSetVersions": ["0.1"]
+  },
+  "permissions": {
+    "fileRead": {
+      "enabled": true,
+      "scopes": ["${RUN_DIR}/inputs/*.json"],
+      "reason": "读取本轮规范化简历、JD 和事实快照。"
+    },
+    "fileWrite": {
+      "enabled": true,
+      "scopes": ["${RUN_DIR}/providers/resume-optimizer/*"],
+      "reason": "只写入该 Provider 的隔离输出目录。"
+    },
+    "network": {
+      "enabled": false,
+      "domains": []
+    },
+    "shell": {
+      "enabled": false,
+      "commands": []
+    },
+    "secrets": []
+  },
+  "runtime": {
+    "mode": "HOST_SKILL",
+    "entrypoint": "resume-optimizer",
+    "timeoutSeconds": 180,
+    "supportsCancellation": true
+  },
+  "adapter": {
+    "id": "resume-optimizer-native",
+    "version": "0.1.0",
+    "normalizationMode": "NONE"
+  },
+  "security": {
+    "reviewStatus": "PENDING",
+    "reviewer": "resume-studio-local-review",
+    "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "notes": ["公开分发前必须确认第三方许可证和再分发条件。"]
+  },
+  "tests": {
+    "contractFixtures": [
+      "fixtures/normal-resume.json",
+      "fixtures/missing-metrics.json",
+      "fixtures/locked-facts.json",
+      "fixtures/hallucination-trap.json",
+      "fixtures/timeout.json"
+    ],
+    "lastStatus": "NOT_RUN"
+  }
+}
+

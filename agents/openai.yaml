@@ -1,0 +1,8 @@
+interface:
+  display_name: "Resume Skill Arena"
+  short_description: "Compare traceable resume rewrites from up to three Skills"
+  brand_color: "#1551DB"
+  default_prompt: "Use $resume-skill-arena to launch the local workbench and compare my resume against a job description."
+
+policy:
+  allow_implicit_invocation: true

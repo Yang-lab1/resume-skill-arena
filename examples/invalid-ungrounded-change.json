@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "0.1",
+  "changeSetId": "changeset.invalid.ungrounded.001",
+  "runId": "run.tencent-ai-design.20260820",
+  "baseline": {
+    "resumeId": "resume.lin-yang.zh.v1",
+    "resumeHash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "resumeAstVersion": "0.1",
+    "jobId": "job.tencent-ai-design.20260820",
+    "jobHash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "jobAstVersion": "0.1",
+    "factSnapshotId": "facts.lin-yang.20260820",
+    "locale": "zh-CN"
+  },
+  "producer": {
+    "skillId": "untrusted-resume-skill",
+    "skillVersion": "0.0.1",
+    "adapterId": "generic-text-adapter",
+    "adapterVersion": "0.1.0",
+    "invocationId": "invoke.untrusted.001"
+  },
+  "status": "REJECTED",
+  "createdAt": "2026-08-20T12:05:00+08:00",
+  "summary": "故意缺少源简历证据的无效样例。",
+  "changes": [
+    {
+      "changeId": "change.invalid.revenue.001",
+      "sourceBlockRef": {
+        "blockId": "experience.ufei.achievement.01",
+        "structuralPath": "experience[0].achievements[0]",
+        "contentHash": "3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "operation": "REPLACE",
+      "originalText": "独立开发 WasteFlow Reuse Agent。",
+      "proposedText": "主导企业级 AI 平台，为公司创造 5000 万元收入。",
+      "rationale": {
+        "summary": "使用更强的商业化表达。",
+        "category": "JD_ALIGNMENT"
+      },
+      "resumeEvidence": [],
+      "jobEvidence": [],
+      "factImpacts": [
+        {
+          "fieldId": "fact.revenue.50000000",
+          "impactType": "ADD",
+          "originalValue": null,
+          "proposedValue": 50000000,
+          "approvalRequired": true,
+          "reason": "源简历和事实库均不存在该收入数据。"
+        }
+      ],
+      "risk": {
+        "level": "BLOCKED",
+        "codes": ["UNGROUNDED_CLAIM", "FACT_CHANGE"],
+        "reason": "虚构收入和企业级平台所有权。"
+      },
+      "adoptionPolicy": "PROHIBITED"
+    }
+  ],
+  "validation": {
+    "schema": { "status": "FAIL", "messages": ["resumeEvidence 至少需要一条证据。"] },
+    "baseline": { "status": "PASS", "messages": [] },
+    "facts": { "status": "FAIL", "messages": ["发现未证实的 5000 万元收入。"] },
+    "evidence": { "status": "FAIL", "messages": ["修改缺少源简历证据。"] },
+    "length": { "status": "NOT_RUN", "messages": [] },
+    "format": { "status": "NOT_RUN", "messages": [] }
+  }
+}
+

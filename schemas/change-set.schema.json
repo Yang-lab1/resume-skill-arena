@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resume-studio.dev/schemas/change-set/0.1.json",
+  "title": "Resume Studio ChangeSet v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "changeSetId",
+    "runId",
+    "baseline",
+    "producer",
+    "status",
+    "createdAt",
+    "changes",
+    "validation"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "0.1" },
+    "changeSetId": { "$ref": "#/$defs/id" },
+    "runId": { "$ref": "#/$defs/id" },
+    "baseline": { "$ref": "#/$defs/baseline" },
+    "producer": { "$ref": "#/$defs/producer" },
+    "status": { "enum": ["VALID", "PARTIAL", "REJECTED"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "summary": { "type": "string", "maxLength": 1000 },
+    "changes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/change" },
+      "maxItems": 500
+    },
+    "validation": { "$ref": "#/$defs/validation" },
+    "ratings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rating" },
+      "uniqueItems": true,
+      "maxItems": 4
+    },
+    "extensions": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resumeId",
+        "resumeHash",
+        "resumeAstVersion",
+        "jobId",
+        "jobHash",
+        "jobAstVersion",
+        "factSnapshotId",
+        "locale"
+      ],
+      "properties": {
+        "resumeId": { "$ref": "#/$defs/id" },
+        "resumeHash": { "$ref": "#/$defs/sha256" },
+        "resumeAstVersion": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "jobId": { "$ref": "#/$defs/id" },
+        "jobHash": { "$ref": "#/$defs/sha256" },
+        "jobAstVersion": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "factSnapshotId": { "$ref": "#/$defs/id" },
+        "locale": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxPages": { "type": "integer", "minimum": 1, "maximum": 10 },
+            "templateId": { "$ref": "#/$defs/id" },
+            "outputLanguages": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skillId", "skillVersion", "adapterId", "adapterVersion", "invocationId"],
+      "properties": {
+        "skillId": { "$ref": "#/$defs/id" },
+        "skillVersion": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "adapterId": { "$ref": "#/$defs/id" },
+        "adapterVersion": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "invocationId": { "$ref": "#/$defs/id" },
+        "parentChangeSetIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "blockRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockId", "structuralPath", "contentHash"],
+      "properties": {
+        "blockId": { "$ref": "#/$defs/id" },
+        "structuralPath": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "contentHash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceId", "sourceType", "sourceRef", "quote"],
+      "properties": {
+        "evidenceId": { "$ref": "#/$defs/id" },
+        "sourceType": { "enum": ["RESUME", "USER_FACT", "JOB_DESCRIPTION", "USER_CONFIRMATION"] },
+        "sourceRef": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "quote": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "factImpact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fieldId", "impactType", "originalValue", "proposedValue", "approvalRequired"],
+      "properties": {
+        "fieldId": { "$ref": "#/$defs/id" },
+        "impactType": { "enum": ["NONE", "REFRAME", "MODIFY", "ADD", "REMOVE"] },
+        "originalValue": { "type": ["string", "number", "boolean", "null"] },
+        "proposedValue": { "type": ["string", "number", "boolean", "null"] },
+        "approvalRequired": { "type": "boolean" },
+        "reason": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "codes", "reason"],
+      "properties": {
+        "level": { "enum": ["SAFE", "REVIEW_REQUIRED", "BLOCKED"] },
+        "codes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "NONE",
+              "FACT_CHANGE",
+              "UNGROUNDED_CLAIM",
+              "SEMANTIC_STRENGTHENING",
+              "MISSING_JOB_EVIDENCE",
+              "BASELINE_MISMATCH",
+              "FORMAT_RISK",
+              "LENGTH_RISK",
+              "SECURITY_REVIEW"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "rationale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "category"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "category": {
+          "enum": [
+            "JD_ALIGNMENT",
+            "CLARITY",
+            "STAR",
+            "ATS",
+            "CONCISION",
+            "STRUCTURE",
+            "TECHNICAL_DEPTH",
+            "DESIGN_NARRATIVE",
+            "EVIDENCE_QUALITY",
+            "FORMAT"
+          ]
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changeId",
+        "sourceBlockRef",
+        "operation",
+        "originalText",
+        "proposedText",
+        "rationale",
+        "resumeEvidence",
+        "jobEvidence",
+        "factImpacts",
+        "risk",
+        "adoptionPolicy"
+      ],
+      "properties": {
+        "changeId": { "$ref": "#/$defs/id" },
+        "sourceBlockRef": { "$ref": "#/$defs/blockRef" },
+        "operation": { "enum": ["REPLACE", "INSERT", "DELETE", "MOVE", "KEEP"] },
+        "originalText": { "type": ["string", "null"], "maxLength": 20000 },
+        "proposedText": { "type": ["string", "null"], "maxLength": 20000 },
+        "insertPosition": { "enum": ["BEFORE", "AFTER", "FIRST_CHILD", "LAST_CHILD"] },
+        "targetBlockRef": { "$ref": "#/$defs/blockRef" },
+        "rationale": { "$ref": "#/$defs/rationale" },
+        "resumeEvidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence" },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "jobEvidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence" },
+          "maxItems": 20
+        },
+        "factImpacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/factImpact" },
+          "maxItems": 50
+        },
+        "risk": { "$ref": "#/$defs/risk" },
+        "adoptionPolicy": { "enum": ["USER_SELECTABLE", "EXPLICIT_USER_APPROVAL", "PROHIBITED"] },
+        "extensions": { "type": "object", "additionalProperties": true }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "operation": { "const": "REPLACE" } } },
+          "then": {
+            "properties": {
+              "originalText": { "type": "string", "minLength": 1 },
+              "proposedText": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "INSERT" } } },
+          "then": {
+            "required": ["insertPosition"],
+            "properties": {
+              "originalText": { "type": "null" },
+              "proposedText": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "enum": ["DELETE", "KEEP"] } } },
+          "then": {
+            "properties": {
+              "originalText": { "type": "string", "minLength": 1 },
+              "proposedText": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "MOVE" } } },
+          "then": {
+            "required": ["targetBlockRef"],
+            "properties": {
+              "originalText": { "type": "string", "minLength": 1 },
+              "proposedText": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "risk": {
+                "type": "object",
+                "properties": { "level": { "const": "BLOCKED" } }
+              }
+            }
+          },
+          "then": { "properties": { "adoptionPolicy": { "const": "PROHIBITED" } } }
+        }
+      ]
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "messages"],
+      "properties": {
+        "status": { "enum": ["PASS", "WARN", "FAIL", "NOT_RUN"] },
+        "messages": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "maxItems": 50
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "baseline", "facts", "evidence", "length", "format"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/check" },
+        "baseline": { "$ref": "#/$defs/check" },
+        "facts": { "$ref": "#/$defs/check" },
+        "evidence": { "$ref": "#/$defs/check" },
+        "length": { "$ref": "#/$defs/check" },
+        "format": { "$ref": "#/$defs/check" }
+      }
+    },
+    "rating": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "value", "explanation"],
+      "properties": {
+        "dimension": { "enum": ["EVIDENCE_COMPLETENESS", "JOB_COVERAGE", "CLARITY", "RISK"] },
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "explanation": { "type": "string", "minLength": 1, "maxLength": 1000 }
+      }
+    }
+  }
+}

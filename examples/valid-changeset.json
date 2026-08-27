@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "0.1",
+  "changeSetId": "changeset.tencent.resume-optimizer.001",
+  "runId": "run.tencent-ai-design.20260820",
+  "baseline": {
+    "resumeId": "resume.lin-yang.zh.v1",
+    "resumeHash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "resumeAstVersion": "0.1",
+    "jobId": "job.tencent-ai-design.20260820",
+    "jobHash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "jobAstVersion": "0.1",
+    "factSnapshotId": "facts.lin-yang.20260820",
+    "locale": "zh-CN",
+    "constraints": {
+      "maxPages": 1,
+      "templateId": "template.lin-yang.zh.v1",
+      "outputLanguages": ["zh-CN"]
+    }
+  },
+  "producer": {
+    "skillId": "resume-optimizer",
+    "skillVersion": "1.0.0",
+    "adapterId": "resume-optimizer-native",
+    "adapterVersion": "0.1.0",
+    "invocationId": "invoke.resume-optimizer.001"
+  },
+  "status": "VALID",
+  "createdAt": "2026-08-20T12:00:00+08:00",
+  "summary": "强化 WasteFlow 的项目所有权、流程价值与量化成果。",
+  "changes": [
+    {
+      "changeId": "change.wasteflow.achievement.001",
+      "sourceBlockRef": {
+        "blockId": "experience.ufei.achievement.01",
+        "structuralPath": "experience[0].achievements[0]",
+        "contentHash": "3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "operation": "REPLACE",
+      "originalText": "独立开发 WasteFlow Reuse Agent，将历史案例检索与资产复用接入方案流程。",
+      "proposedText": "独立开发 WasteFlow Reuse Agent，将历史案例检索与设计资产复用接入方案流程，使提案周期由 7 天缩短至 2 天。",
+      "rationale": {
+        "summary": "保留真实所有权表述，并补充源简历已有的量化结果。",
+        "category": "STAR"
+      },
+      "resumeEvidence": [
+        {
+          "evidenceId": "evidence.resume.wasteflow.001",
+          "sourceType": "RESUME",
+          "sourceRef": "experience.ufei.achievement.01",
+          "quote": "独立开发 WasteFlow Reuse Agent……使方案周期由 7 天缩短至 2 天"
+        }
+      ],
+      "jobEvidence": [
+        {
+          "evidenceId": "evidence.jd.prototype.001",
+          "sourceType": "JOB_DESCRIPTION",
+          "sourceRef": "jd.requirement.04",
+          "quote": "能够独立完成 AI 原型并推动方案落地"
+        }
+      ],
+      "factImpacts": [],
+      "risk": {
+        "level": "SAFE",
+        "codes": ["NONE"],
+        "reason": "新增内容均可由冻结简历基线直接支持。"
+      },
+      "adoptionPolicy": "USER_SELECTABLE"
+    }
+  ],
+  "validation": {
+    "schema": { "status": "PASS", "messages": [] },
+    "baseline": { "status": "PASS", "messages": [] },
+    "facts": { "status": "PASS", "messages": [] },
+    "evidence": { "status": "PASS", "messages": [] },
+    "length": { "status": "WARN", "messages": ["最终合并后重新执行一页检查。"] },
+    "format": { "status": "NOT_RUN", "messages": ["候选阶段尚未渲染 DOCX。"] }
+  },
+  "ratings": [
+    {
+      "dimension": "EVIDENCE_COMPLETENESS",
+      "value": 1,
+      "explanation": "修改中的所有事实均能映射到源简历。"
+    },
+    {
+      "dimension": "JOB_COVERAGE",
+      "value": 0.8,
+      "explanation": "覆盖独立原型与流程落地要求，不代表整体岗位匹配总分。"
+    }
+  ]
+}
+

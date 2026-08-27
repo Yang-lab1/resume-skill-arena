@@ -1,0 +1,145 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "changeSetId", "runId", "baseline", "producer", "status", "createdAt", "summary", "changes", "validation"],
+  "properties": {
+    "schemaVersion": { "type": "string", "enum": ["0.1"] },
+    "changeSetId": { "type": "string" },
+    "runId": { "type": "string" },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resumeId", "resumeHash", "resumeAstVersion", "jobId", "jobHash", "jobAstVersion", "factSnapshotId", "locale", "constraints"],
+      "properties": {
+        "resumeId": { "type": "string" },
+        "resumeHash": { "type": "string" },
+        "resumeAstVersion": { "type": "string" },
+        "jobId": { "type": "string" },
+        "jobHash": { "type": "string" },
+        "jobAstVersion": { "type": "string" },
+        "factSnapshotId": { "type": "string" },
+        "locale": { "type": "string" },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maxPages", "outputLanguages"],
+          "properties": {
+            "maxPages": { "type": "integer" },
+            "outputLanguages": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skillId", "skillVersion", "adapterId", "adapterVersion", "invocationId"],
+      "properties": {
+        "skillId": { "type": "string" },
+        "skillVersion": { "type": "string" },
+        "adapterId": { "type": "string" },
+        "adapterVersion": { "type": "string" },
+        "invocationId": { "type": "string" }
+      }
+    },
+    "status": { "type": "string", "enum": ["VALID", "PARTIAL"] },
+    "createdAt": { "type": "string" },
+    "summary": { "type": "string", "maxLength": 1000 },
+    "changes": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["changeId", "sourceBlockRef", "operation", "originalText", "proposedText", "rationale", "resumeEvidence", "jobEvidence", "factImpacts", "risk", "adoptionPolicy"],
+        "properties": {
+          "changeId": { "type": "string", "minLength": 3, "maxLength": 128 },
+          "sourceBlockRef": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["blockId", "structuralPath", "contentHash"],
+            "properties": {
+              "blockId": { "type": "string", "minLength": 3, "maxLength": 128 },
+              "structuralPath": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "contentHash": { "type": "string", "minLength": 64, "maxLength": 64 }
+            }
+          },
+          "operation": { "type": "string", "enum": ["REPLACE"] },
+          "originalText": { "type": "string", "minLength": 1, "maxLength": 20000 },
+          "proposedText": { "type": "string", "minLength": 1, "maxLength": 20000 },
+          "rationale": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["summary", "category"],
+            "properties": {
+              "summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "category": { "type": "string", "enum": ["JD_ALIGNMENT", "CLARITY", "STAR", "ATS", "CONCISION", "STRUCTURE", "TECHNICAL_DEPTH", "DESIGN_NARRATIVE", "EVIDENCE_QUALITY", "FORMAT"] }
+            }
+          },
+          "resumeEvidence": { "type": "array", "minItems": 1, "maxItems": 20, "items": { "$ref": "#/$defs/evidence" } },
+          "jobEvidence": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/evidence" } },
+          "factImpacts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/factImpact" } },
+          "risk": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["level", "codes", "reason"],
+            "properties": {
+              "level": { "type": "string", "enum": ["SAFE", "REVIEW_REQUIRED", "BLOCKED"] },
+              "codes": { "type": "array", "minItems": 1, "items": { "type": "string", "enum": ["NONE", "FACT_CHANGE", "UNGROUNDED_CLAIM", "SEMANTIC_STRENGTHENING", "MISSING_JOB_EVIDENCE", "BASELINE_MISMATCH", "FORMAT_RISK", "LENGTH_RISK", "SECURITY_REVIEW"] } },
+              "reason": { "type": "string", "minLength": 1, "maxLength": 2000 }
+            }
+          },
+          "adoptionPolicy": { "type": "string", "enum": ["USER_SELECTABLE", "EXPLICIT_USER_APPROVAL", "PROHIBITED"] }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "baseline", "facts", "evidence", "length", "format"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/check" },
+        "baseline": { "$ref": "#/$defs/check" },
+        "facts": { "$ref": "#/$defs/check" },
+        "evidence": { "$ref": "#/$defs/check" },
+        "length": { "$ref": "#/$defs/check" },
+        "format": { "$ref": "#/$defs/check" }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceId", "sourceType", "sourceRef", "quote"],
+      "properties": {
+        "evidenceId": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "sourceType": { "type": "string", "enum": ["RESUME", "JOB_DESCRIPTION"] },
+        "sourceRef": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "quote": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "factImpact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fieldId", "impactType", "originalValue", "proposedValue", "approvalRequired", "reason"],
+      "properties": {
+        "fieldId": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "impactType": { "type": "string", "enum": ["NONE", "REFRAME", "MODIFY", "ADD", "REMOVE"] },
+        "originalValue": { "type": ["string", "number", "boolean", "null"] },
+        "proposedValue": { "type": ["string", "number", "boolean", "null"] },
+        "approvalRequired": { "type": "boolean" },
+        "reason": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "messages"],
+      "properties": {
+        "status": { "type": "string", "enum": ["PASS", "WARN", "FAIL", "NOT_RUN"] },
+        "messages": { "type": "array", "maxItems": 50, "items": { "type": "string", "minLength": 1, "maxLength": 1000 } }
+      }
+    }
+  }
+}

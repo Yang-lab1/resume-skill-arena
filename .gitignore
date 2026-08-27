@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.resume-studio/
+ui/qa-artifacts/
+coverage/
+runs/
+output/
+agent_memory/
+ui/node_modules/
+ui/dist/
+*.traineddata
+ui/public/assets/resume-studio-cover.png
+!ui/public/tessdata/
+!ui/public/tessdata/*.traineddata
