@@ -11,6 +11,10 @@ metadata:
 
 Launch the repository's existing local workbench. Do not replace it with a chat-only simulation and do not generate demo resume data.
 
+When the user invokes or names `resume-skill-arena`, treat “launch the workbench” as part of the request: start the local API/UI, verify the health endpoint, and open the local browser page automatically. Do not wait for the user to separately ask for the website URL. If the host cannot open a browser or start local processes, report the exact missing capability and stop.
+
+This repository is an Agent Skill package, not a hosted website. A host must support Agent Skills, local process execution, and browser control for the zero-touch flow. Tools that can only read Markdown prompts (or do not permit local processes/browser control) cannot provide automatic launch; they may still guide the user through manual startup.
+
 Requires Node.js 20+, a local browser that can be opened by the host, Shell/local child-process capability, and an authenticated Codex environment with available usage for real Provider runs. If any of these capabilities are unavailable, stop with an actionable error; do not fall back to a chat-only or text-only workflow.
 
 ## Start the workbench
@@ -20,7 +24,7 @@ Requires Node.js 20+, a local browser that can be opened by the host, Shell/loca
 3. Install missing dependencies with `npm install` and `npm --prefix ui install`.
 4. Start the app with `npm run dev:local`.
 5. Verify `http://127.0.0.1:4317/api/health` returns an object with `ok: true` and `demoData: false`.
-6. Open `http://127.0.0.1:4173` in the user's browser. A browser is required for this Skill; do not replace the workbench with a text-only result.
+6. Open `http://127.0.0.1:4173` in the user's browser. A browser is required for this Skill; do not replace the workbench with a text-only result. Return the URL only as a useful fallback after opening it.
 
 If installation, GitHub Skill import, OCR resources, or Provider execution needs network or local process access, consolidate the required permissions into one clear confirmation before running. Do not ask repeatedly for permissions already granted by the host.
 
