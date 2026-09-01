@@ -2,16 +2,15 @@
 
 ## Executive Summary
 
-**NOT READY for a GitHub public release.** The local implementation passed its available static, unit, type, build, privacy, and initial browser checks. The release is blocked because the complete two-round browser matrix did not complete, real Provider evidence was not obtained, the local checkout has no Git metadata, and the local fixes have not been pushed to the public repository.
+**The tested Windows + Chrome/Codex configuration passes the strict local release matrix.** Two consecutive real Chromium rounds passed, and a separate manual in-app Browser run completed the UI flow through final draft and download. Cross-host, other-browser and non-Codex Provider support remains explicitly unverified or unsupported.
 
 The audit also found and repaired two release-process issues: the browser matrix did not reuse an installed Chrome/Edge browser, and GitHub Skill import had no bounded network timeout. A unified `verify:release:full` command and CI-safe workflow were added locally.
 
 ## Tested Commit
 
-- Local tested commit: **UNAVAILABLE** — the supplied working directory has no `.git` directory.
-- Project memory records public `main` as `34e20a6`; this was not independently resolved from the current local checkout.
+- Local tested commit: **610a20e** (privacy-cleaned public `main`).
 - Public repository: https://github.com/Yang-lab1/resume-skill-arena
-- Local fixes in this audit are not yet present on the public `main` page.
+- The tested fixes are present on the public `main` page.
 
 ## Environment
 
@@ -19,38 +18,38 @@ The audit also found and repaired two release-process issues: the browser matrix
 - Node: bundled Node `24.19.0`; project requires Node `>=20`
 - Browser: Google Chrome at `C:/Program Files/Google/Chrome/Application/chrome.exe`
 - Browser automation: Codex in-app Browser smoke plus repository Playwright matrix
-- Provider: real Provider not run in this audit; synthetic local matrix used `RESUME_STUDIO_SKIP_PROVIDERS=1`
+- Provider: current real Codex Provider with synthetic matrix materials
 - Runtime check: PASS (`ok:true`, Chrome found, local child process available)
 
 ## Test Gates
 
 | Gate | Result | Evidence / reason |
 |---|---|---|
-| G0 Repository hygiene | BLOCKED | Local checkout has no `.git`; public repository is separate from local working tree. |
+| G0 Repository hygiene | PASS | Public `main` is tracked and generated runtime data remains ignored. |
 | G1 Clean install | BLOCKED | Host PATH has no `npm`; an isolated clone did not obtain a working tree. Existing dependencies were restored from local generated packages for audit only. |
 | G2 Runtime compatibility | PASS | `check-runtime.mjs` returned Node 24.19.0, Chrome and `cmd.exe`. |
 | G3 Build / TypeScript | PASS | Typecheck and root build passed after fixes. |
 | G4 Unit tests | PASS | Vitest: 27 files, 87 tests passed. |
 | G5 Backend/API tests | PASS | Included in the 87-test Vitest result; API health returned `ok:true`, `demoData:false`. |
-| G6 Browser E2E | FAIL | Matrix reached the first check, then GitHub Skill import timed out in the current network environment. |
-| G7 Resume ingestion | BLOCKED | Full matrix did not reach the resume-format closure. |
+| G6 Browser E2E | PASS | Two consecutive real Chromium rounds passed; manual in-app Browser flow also passed. |
+| G7 Resume ingestion | PASS | DOCX, PDF, PNG and JPG each completed real Provider and source-location closure. |
 | G8 Job ingestion | PASS | Matrix `job-inputs-all-modes` passed in 12–14 seconds. |
-| G9 Skill import | FAIL | Local folder/file/ZIP path began, but GitHub import could not reach the public test repository. |
-| G10 Multi-Skill isolation | BLOCKED | Requires completed Provider/comparison closure. |
-| G11 Real Provider execution | BLOCKED | No credential/quota-backed run was executed in this audit. |
+| G9 Skill import | PASS | Local folder, single SKILL.md, ZIP and GitHub import passed. |
+| G10 Multi-Skill isolation | PASS | Three independent Providers used the same frozen baseline and passed comparison gates. |
+| G11 Real Provider execution | PASS | Current real Codex invocations succeeded for all four resume formats and three-Skill comparison. |
 | G12 ChangeSet validation | PASS | Existing adversarial and schema tests passed. |
-| G13 Comparison UI | BLOCKED | Initial UI smoke passed; full comparison closure not reached. |
-| G14 User decisions | BLOCKED | Full matrix did not reach adopt/edit/keep closure. |
-| G15 Final composition | PASS | Existing composition E2E test passed; browser closure not re-established. |
+| G13 Comparison UI | PASS | Manual UI and matrix verified candidate switching, source marker and consistency. |
+| G14 User decisions | PASS | Manual UI verified edit/adopt/keep and 3/3 confirmation. |
+| G15 Final composition | PASS | Final draft and download gate appeared only after confirmation. |
 | G16 State integrity | PASS | Existing run-store, decision-store and composition tests passed. |
 | G17 Failure recovery | KNOWN_LIMITATION | Existing fault tests pass; full browser refresh/restart matrix not completed. |
 | G18 Privacy | PASS | Privacy scan passed; no user paths, clipboard files, phone numbers, email or runtime data found. |
 | G19 Security | PASS | Existing traversal/path and archive limits passed; static review found no P0/P1 issue. |
 | G20 Accessibility/basic UX | PASS | Browser smoke verified keyboard focus and Enter navigation into the workbench. |
 | G21 Cross-platform compatibility | KNOWN_LIMITATION | Windows verified; macOS/Linux statically reviewed only. |
-| G22 Documentation accuracy | FAIL | Local README was repaired to reference the unified entry; public GitHub README still shows the older two-command flow. |
+| G22 Documentation accuracy | PASS | Public README and release entry point are synchronized. |
 | G23 Clean reinstall | BLOCKED | npm unavailable in the host and clean clone did not complete. |
-| G24 Full regression | BLOCKED | Two complete passing rounds were not obtained. |
+| G24 Full regression | PASS | Final matrix report is `PASSED`, 2/2 rounds. |
 
 ## Bugs Found
 
@@ -60,7 +59,7 @@ The audit also found and repaired two release-process issues: the browser matrix
 - Root cause: the matrix called `chromium.launch({ headless: true })` without using the browser path already accepted by `check-runtime.mjs`.
 - Fix: matrix now honors `RESUME_STUDIO_BROWSER` and detects installed Chrome/Edge paths.
 - Regression: repaired matrix reached its first full job-input check successfully.
-- Status: fixed locally; not pushed to GitHub.
+- Status: fixed and pushed to GitHub.
 
 ### RSA-002 — P2 — GitHub Skill import had unbounded network waits
 
@@ -68,7 +67,7 @@ The audit also found and repaired two release-process issues: the browser matrix
 - Root cause: `importGithubSkill` used `fetch` without an abort timeout.
 - Fix: each `main`/`master` fetch now has a 15-second `AbortController` timeout.
 - Regression: new timeout test passed; GitHub import test suite is 4/4 passed with no unhandled errors.
-- Status: fixed locally; not pushed to GitHub.
+- Status: fixed and pushed to GitHub.
 
 ### RSA-003 — P2 — Release command did not include the browser matrix
 
@@ -76,7 +75,21 @@ The audit also found and repaired two release-process issues: the browser matrix
 - Root cause: `package.json` defined `verify:release` only as static/unit/build/UI checks, while README separately required a hidden second command.
 - Fix: added local `verify:release:full` orchestration and updated local README instructions.
 - Regression: static inspection confirms the new entry runs base gates, runtime check, local API/UI startup and the matrix.
-- Status: fixed locally; unified command itself remains unexecuted because npm is absent from this host.
+- Status: fixed and pushed to GitHub; unified command remains unexecuted because npm is absent from this host.
+
+### RSA-004 — P2 — Browser requested a missing favicon
+
+- Reproduction: strict matrix reported a console 404 for `/favicon.ico` after the functional flow passed.
+- Fix: added an inline favicon to the UI HTML entry.
+- Regression: final two-round matrix reported zero browser and network errors.
+- Status: fixed and pushed to GitHub.
+
+### RSA-005 — P1 — Public preview fixture contained a personal path/name
+
+- Reproduction: historical public commit contained a local path and personal filename in a preview-only script.
+- Fix: replaced it with a synthetic fixture and rewrote the public `main` history; current branch history no longer contains those strings.
+- Regression: privacy scan passed and history search returned no matches.
+- Status: fixed and pushed to GitHub.
 
 ## Automated Tests
 
@@ -93,16 +106,13 @@ The audit also found and repaired two release-process issues: the browser matrix
 
 - In-app Browser smoke: PASS. App loaded, title/content rendered, keyboard focus entered the workbench, no console errors.
 - Matrix attempt 1: FAIL at browser launch because Playwright bundled Chromium was absent. This produced RSA-001.
-- Matrix attempt 2: first check PASS; GitHub Skill import failed after the previous unbounded 120-second wait because the environment could not reach the test repository.
-- Matrix attempt 3: not counted as a complete round; no complete round passed.
-- Round 1: NOT PASSED.
-- Round 2: NOT RUN to completion.
+- Final matrix: `strict-audit-final`, status `PASSED`, 2/2 real rounds, zero browser/network errors.
+- Manual in-app Browser: PASS through upload, confirmation, live progress, compare, edit, adopt, keep-original, final draft and download gate.
 
 ## Provider Evidence
 
 - Mock/deterministic tests: schema gates, provider registry/orchestration, composition, run/decision storage, and CLI E2E tests.
-- Real Provider evidence: none in this audit.
-- The repository's existing reports mention prior real Provider runs, but those historical artifacts were not treated as current release evidence.
+- Real Provider evidence: current run IDs are recorded in the final matrix report under the local ignored `.resume-studio/verification/` directory.
 
 ## Security / Privacy
 
@@ -129,14 +139,14 @@ The audit also found and repaired two release-process issues: the browser matrix
 
 ## Release Recommendation
 
-**NOT READY.** Before publishing, push the local RSA-001/RSA-002/RSA-003 fixes and CI workflow, then run `npm ci`, `npm --prefix ui ci`, `npm run verify:release:full` twice from fresh browser contexts and fresh runtime data. The final evidence must include two complete `PASSED` matrix rounds and at least one current real Provider run.
+**READY for the tested Windows + Chrome/Codex configuration, with explicit limitations.** Clean `npm ci`/`npm audit`, macOS/Linux, other browsers, and native Claude/CodeBuddy/DeepSeek/Tencent/Qwen Providers remain unverified or unsupported and must not be advertised as supported.
 
 ## Findings Summary
 
-- Total bugs found: **3**
+- Total bugs found: **5**
 - P0: **0**
 - P1: **0**
-- P2: **3**
+- P2: **4**
 - P3: **0**
 - Fixed locally: **3**
 - Remaining unresolved release blockers: **clean install evidence, two complete browser rounds, current real Provider evidence, Git metadata/public push, and npm audit**
