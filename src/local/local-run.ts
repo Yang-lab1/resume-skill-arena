@@ -80,7 +80,7 @@ export async function executeLocalRun(
       now
     });
     dependencies.onProgress?.({ stage: "baseline", completed: 1, total: totalProgress, message: "简历与岗位已冻结为同一份真实基线。" });
-    const skillRoots = dependencies.skillRoots ?? [resolve(runtimeRoot, "skills"), ...defaultSkillRoots()];
+    const skillRoots = dependencies.skillRoots ?? [resolve(dependencies.projectRoot, "skills"), resolve(runtimeRoot, "skills"), ...defaultSkillRoots()];
     const skills = discoverInstalledSkills(request.skillIds, skillRoots);
     const invokerFactory = dependencies.invokerFactory ?? ((skill, runDirectory) =>
       createRealCodexSkillInvoker({

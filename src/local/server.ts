@@ -60,7 +60,7 @@ export function createLocalServer(projectRoot: string) {
     }
     if (request.method === "GET" && request.url?.startsWith("/api/skills/check?")) {
       const ids = new URL(request.url, "http://127.0.0.1").searchParams.getAll("id");
-      const roots = [resolve(projectRoot, ".resume-studio", "skills"), ...defaultSkillRoots()];
+      const roots = [resolve(projectRoot, "skills"), resolve(projectRoot, ".resume-studio", "skills"), ...defaultSkillRoots()];
       const installed = [];
       const missing = [];
       for (const id of ids) {
