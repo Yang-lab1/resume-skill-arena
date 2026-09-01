@@ -254,6 +254,7 @@ function Setup({ onRun }) {
   const [selected, setSelected] = useState(["career-ops", "interview-coach", "asu-resume"]);
   const [missingSkills, setMissingSkills] = useState([]);
   const [checkingSkills, setCheckingSkills] = useState(false);
+  const [skillAvailability, setSkillAvailability] = useState(null);
   const [notice, setNotice] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -269,6 +270,22 @@ function Setup({ onRun }) {
 
   const jobReady = jobText.trim().length > 0;
   const resumeReady = Boolean(resume && (resumeExtension(resume.name) === ".docx" || resumeText.trim()) && !resumeError);
+
+  useEffect(() => {
+    let active = true;
+    const ids = [...SKILLS, ...customSkills].map((skill) => skill.id);
+    fetch(`http://127.0.0.1:4317/api/skills/check?${ids.map((id) => `id=${encodeURIComponent(id)}`).join("&")}`)
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!active || !payload.ok) return;
+        const installed = new Set(payload.data?.installed?.map((skill) => skill.id) || []);
+        const availability = Object.fromEntries(ids.map((id) => [id, installed.has(id)]));
+        setSkillAvailability(availability);
+        setSelected((items) => items.filter((id) => availability[id] !== false));
+      })
+      .catch(() => { if (active) setSkillAvailability(null); });
+    return () => { active = false; };
+  }, [customSkills]);
 
   useEffect(() => {
     let active = true;
@@ -349,7 +366,7 @@ function Setup({ onRun }) {
             <span>02</span><div><h2>这次让哪些 Skill 来改</h2><p>固定选 3 个；每个 Skill 独立处理同一份基线。</p></div><strong className="counter">{selected.length} / 3</strong>
           </header>
           <div className="skill-grid">
-            {SKILLS.map((skill) => <SkillCard key={skill.id} skill={skill} selected={selected.includes(skill.id)} disabled={selected.length >= 3} onToggle={toggle} />)}
+            {SKILLS.map((skill) => <SkillCard key={skill.id} skill={{ ...skill, maker: skillAvailability?.[skill.id] === false ? "LOCAL / NOT INSTALLED" : skill.maker }} selected={selected.includes(skill.id)} disabled={skillAvailability?.[skill.id] === false || selected.length >= 3} onToggle={toggle} />)}
             <SkillImportCard count={customSkills.length} onClick={() => setImporting(true)} />
           </div>
           {customSkills.length > 0 && <div className="custom-skill-list">{customSkills.map((skill) => <SkillCard key={skill.id} skill={skill} selected={selected.includes(skill.id)} disabled={selected.length >= 3} onToggle={toggle} />)}</div>}

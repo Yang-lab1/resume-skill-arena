@@ -60,14 +60,16 @@ export function createLocalServer(projectRoot: string) {
     }
     if (request.method === "GET" && request.url?.startsWith("/api/skills/check?")) {
       const ids = new URL(request.url, "http://127.0.0.1").searchParams.getAll("id");
-      try {
-        const installed = discoverInstalledSkills(ids, [resolve(projectRoot, ".resume-studio", "skills"), ...defaultSkillRoots()]);
-        sendJson(response, 200, { ok: true, data: { requested: ids, installed: installed.map((skill) => ({ id: skill.id, name: skill.name, version: skill.version })), missing: [] } }, origin);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        const missing = ids.filter((id) => message.includes(id));
-        sendJson(response, 200, { ok: true, data: { requested: ids, installed: [], missing } }, origin);
+      const roots = [resolve(projectRoot, ".resume-studio", "skills"), ...defaultSkillRoots()];
+      const installed = [];
+      const missing = [];
+      for (const id of ids) {
+        try {
+          const skill = discoverInstalledSkills([id], roots)[0];
+          if (skill) installed.push({ id: skill.id, name: skill.name, version: skill.version });
+        } catch { missing.push(id); }
       }
+      sendJson(response, 200, { ok: true, data: { requested: ids, installed, missing } }, origin);
       return;
     }
     if (request.method === "POST" && request.url === "/api/runs") {
