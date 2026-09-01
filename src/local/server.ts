@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { executeLocalRun, type LocalRunProgress } from "./local-run.js";
+import { defaultSkillRoots, discoverInstalledSkills } from "./skill-catalog.js";
 import { validateRunRequest } from "./run-request.js";
 import { importGithubSkill, importLocalSkill, type SkillImportFile } from "./skill-import.js";
 
@@ -55,6 +56,18 @@ export function createLocalServer(projectRoot: string) {
     }
     if (request.method === "GET" && request.url === "/api/health") {
       sendJson(response, 200, { ok: true, host: "codex-sdk", demoData: false }, origin);
+      return;
+    }
+    if (request.method === "GET" && request.url?.startsWith("/api/skills/check?")) {
+      const ids = new URL(request.url, "http://127.0.0.1").searchParams.getAll("id");
+      try {
+        const installed = discoverInstalledSkills(ids, [resolve(projectRoot, ".resume-studio", "skills"), ...defaultSkillRoots()]);
+        sendJson(response, 200, { ok: true, data: { requested: ids, installed: installed.map((skill) => ({ id: skill.id, name: skill.name, version: skill.version })), missing: [] } }, origin);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const missing = ids.filter((id) => message.includes(id));
+        sendJson(response, 200, { ok: true, data: { requested: ids, installed: [], missing } }, origin);
+      }
       return;
     }
     if (request.method === "POST" && request.url === "/api/runs") {

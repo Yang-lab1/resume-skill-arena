@@ -252,6 +252,8 @@ function Setup({ onRun }) {
   const [jobText, setJobText] = useState("");
   const [customSkills, setCustomSkills] = useState([]);
   const [selected, setSelected] = useState(["career-ops", "interview-coach", "asu-resume"]);
+  const [missingSkills, setMissingSkills] = useState([]);
+  const [checkingSkills, setCheckingSkills] = useState(false);
   const [notice, setNotice] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -267,6 +269,18 @@ function Setup({ onRun }) {
 
   const jobReady = jobText.trim().length > 0;
   const resumeReady = Boolean(resume && (resumeExtension(resume.name) === ".docx" || resumeText.trim()) && !resumeError);
+
+  useEffect(() => {
+    let active = true;
+    if (!selected.length) { setMissingSkills([]); return () => { active = false; }; }
+    setCheckingSkills(true);
+    fetch(`http://127.0.0.1:4317/api/skills/check?${selected.map((id) => `id=${encodeURIComponent(id)}`).join("&")}`)
+      .then((response) => response.json())
+      .then((payload) => { if (active) setMissingSkills(payload.ok ? (payload.data?.missing || []) : selected); })
+      .catch(() => { if (active) setMissingSkills(selected); })
+      .finally(() => { if (active) setCheckingSkills(false); });
+    return () => { active = false; };
+  }, [selected]);
 
   const handleResumeChange = async (file) => {
     setResume(file);
@@ -340,11 +354,12 @@ function Setup({ onRun }) {
           </div>
           {customSkills.length > 0 && <div className="custom-skill-list">{customSkills.map((skill) => <SkillCard key={skill.id} skill={skill} selected={selected.includes(skill.id)} disabled={selected.length >= 3} onToggle={toggle} />)}</div>}
           {notice && <p className="notice" role="status">{notice}</p>}
+          {missingSkills.length > 0 && <p className="notice" role="alert">所选 Skill 尚未安装：{missingSkills.join("、")}。请先导入对应 Skill，或取消选择。</p>}
         </section>
 
         <footer className="setup-footer">
           <div className="privacy"><ShieldCheck size={24} weight="duotone" /><span><strong>文件保存在本地运行目录</strong><small>改写由你当前登录的 Codex 宿主处理，开始前统一确认。</small></span></div>
-          <button className="primary" disabled={!resumeReady || !jobReady || selected.length === 0} onClick={() => setConfirming(true)}>开始真实运行 <ArrowRight size={20} weight="bold" /></button>
+          <button className="primary" disabled={!resumeReady || !jobReady || selected.length === 0 || checkingSkills || missingSkills.length > 0} onClick={() => setConfirming(true)}>开始真实运行 <ArrowRight size={20} weight="bold" /></button>
         </footer>
       </div>
       {confirming && <div className="modal-backdrop"><section className="permission-confirm" role="dialog" aria-modal="true" aria-labelledby="permission-title"><button className="modal-close" onClick={() => setConfirming(false)} aria-label="关闭"><X size={20} /></button><span className="eyebrow">REAL RUN / 统一确认</span><h2 id="permission-title">这次会真的运行。</h2><p>原文件保存在本机；PDF 与图片已先完成文字提取。解析后的简历文字和岗位文字会交给你当前登录的 Codex，由所选 Skill 生成结果。</p><div className="modal-checks"><span><Check size={16} weight="bold" /> 只读取你选择的简历文件</span><span><Check size={16} weight="bold" /> GitHub 与 OCR 按需联网</span><span><Check size={16} weight="bold" /> 失败时不生成替代结果</span></div><button className="primary" onClick={() => onRun({ resume, resumeText: resumeText || undefined, job: { text: jobText }, skills: [...SKILLS, ...customSkills].filter((skill) => selected.includes(skill.id)) })}>确认并开始真实运行 <ArrowRight size={18} weight="bold" /></button></section></div>}
