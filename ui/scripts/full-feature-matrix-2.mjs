@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -24,6 +25,20 @@ const runtimeSkillsRoot = path.resolve(projectRoot, ".resume-studio/skills");
 const appUrl = process.env.RESUME_STUDIO_UI_URL ?? "http://127.0.0.1:4173";
 const apiUrl = process.env.RESUME_STUDIO_API_URL ?? "http://127.0.0.1:4317";
 const skipProviders = process.env.RESUME_STUDIO_SKIP_PROVIDERS === "1";
+const browserExecutable = process.env.RESUME_STUDIO_BROWSER
+  ?? (process.platform === "win32"
+    ? [
+      process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Google/Chrome/Application/chrome.exe"),
+      "C:/Program Files/Google/Chrome/Application/chrome.exe",
+      "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+      "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+    ].find((candidate) => candidate && existsSync(candidate))
+    : [
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium",
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    ].find((candidate) => existsSync(candidate)));
 
 const resumeLines = [
   "ALEX CHEN — PRODUCT DESIGNER",
@@ -451,7 +466,7 @@ assert(health?.ok && health.demoData === false, "本地真实 API 没有启动�
 const fixtures = await createFixtures();
 
 for (let round = 1; round <= targetRounds; round += 1) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, ...(browserExecutable ? { executablePath: browserExecutable } : {}) });
   const context = await browser.newContext(profile === "strict"
     ? { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.25, locale: "zh-CN", reducedMotion: "reduce" }
     : { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });

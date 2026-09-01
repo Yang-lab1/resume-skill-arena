@@ -155,8 +155,16 @@ export async function importGithubSkill(runtimeRoot: string, source: string): Pr
   const sourceRef = `https://github.com/${owner}/${repo}`;
   let response: Response | undefined;
   for (const branch of ["main", "master"]) {
-    const candidate = await fetch(`https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${branch}`, { redirect: "follow" });
-    if (candidate.ok) { response = candidate; break; }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    try {
+      const candidate = await fetch(`https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${branch}`, { redirect: "follow", signal: controller.signal });
+      if (candidate.ok) { response = candidate; break; }
+    } catch {
+      // A branch/network failure is handled as an unavailable GitHub source below.
+    } finally {
+      clearTimeout(timeout);
+    }
   }
   if (!response) throw new Error("无法从 GitHub 下载该仓库，可能不存在或没有公开权限。");
   const bytes = Buffer.from(await response.arrayBuffer());

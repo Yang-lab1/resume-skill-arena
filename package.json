@@ -20,6 +20,7 @@
     "check:runtime": "node scripts/check-runtime.mjs",
     "clean:qa": "node scripts/clean-qa-artifacts.mjs",
     "privacy:scan": "node scripts/privacy-scan.mjs",
+    "verify:release:full": "node scripts/verify-release-full.mjs",
     "verify:release": "npm run privacy:scan && npm test && npm run typecheck && npm run build && npm --prefix ui run build && npm --prefix ui test"
   },
   "dependencies": {

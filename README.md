@@ -105,10 +105,10 @@ npm run dev:local
 
 ```powershell
 npm run verify:release
-node ui/scripts/full-feature-matrix-2.mjs
+npm run verify:release:full
 ```
 
-完整矩阵覆盖所有简历格式、所有岗位输入方式、四种 Skill 导入、3 Skill 硬上限、真实 Provider、原文定位、采用/编辑/保留、审计记录、空白出厂和隐私门禁。只有报告的 `status` 为 `PASSED` 且 `passedRounds` 为 `2` 才允许发布。
+完整入口会先执行基础门禁，再启动本地 API/UI 并运行完整矩阵；矩阵覆盖所有简历格式、所有岗位输入方式、四种 Skill 导入、3 Skill 硬上限、真实 Provider、原文定位、采用/编辑/保留、审计记录、空白出厂和隐私门禁。只有报告的 `status` 为 `PASSED` 且 `passedRounds` 为 `2` 才允许发布。
 
 ## 开发命令
 

@@ -35,4 +35,19 @@ describe("skill import", () => {
     const runtimeRoot = mkdtempSync(join(tmpdir(), "resume-studio-invalid-"));
     expect(() => importLocalSkill(runtimeRoot, [{ path: "../SKILL.md", base64: Buffer.from(skillMarkdown).toString("base64") }])).toThrow("越级路径");
   });
+
+  it("bounds GitHub network failures and reports the source as unavailable", async () => {
+    const runtimeRoot = mkdtempSync(join(tmpdir(), "resume-studio-github-timeout-"));
+    vi.stubGlobal("fetch", vi.fn((_url, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+    })));
+    vi.useFakeTimers();
+    const result = importGithubSkill(runtimeRoot, "example/unavailable-skill");
+    const rejection = expect(result).rejects.toThrow("无法从 GitHub 下载");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await rejection;
+    expect(fetch).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 });
