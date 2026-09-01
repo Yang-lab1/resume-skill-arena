@@ -682,6 +682,7 @@ function Compare({ run, onBack }) {
   const candidates = section?.candidates || [];
   const activeCandidate = candidates.find((candidate) => candidate.skillId === activeSkillId);
   const selectedId = section ? adopted[section.blockId] : undefined;
+  const selectedDraft = section ? drafts[section.blockId] : undefined;
   const adoptedCount = Object.keys(adopted).length;
   const canFinish = changedBlocks.length > 0 && adoptedCount === changedBlocks.length;
   const finalBlocks = allBlocks.map((block) => {
@@ -751,9 +752,9 @@ function Compare({ run, onBack }) {
         </div>
         {activeCandidate && <article className={`candidate-detail accent-${SKILLS.find((skill) => skill.id === activeCandidate.skillId)?.accent || "black"}`}>
           <header><span><small>CODEX HOST / {activeCandidate.invocationId}</small><strong>{activeCandidate.skillId}</strong></span>{selectedId === activeCandidate.skillId && <b><Check size={14} weight="bold" /> 已采用</b>}</header>
-          {editing ? <textarea value={editValue} onChange={(event) => setEditValue(event.target.value)} autoFocus aria-label="修改这条建议" /> : <p>{activeCandidate.proposedText}</p>}
+          {editing ? <textarea value={editValue} onChange={(event) => setEditValue(event.target.value)} autoFocus aria-label="修改这条建议" /> : <p>{selectedId === activeCandidate.skillId ? (selectedDraft ?? activeCandidate.proposedText) : activeCandidate.proposedText}</p>}
           <div className="reason"><strong>为什么这样改 · {activeCandidate.category}</strong><small>{activeCandidate.rationale}</small><em>风险：{activeCandidate.riskLevel} · 版本：{activeCandidate.skillVersion}</em></div>
-          <div className="candidate-actions"><button className="primary" onClick={() => choose(activeCandidate, editing ? editValue : activeCandidate.proposedText)}>{selectedId === activeCandidate.skillId ? "更新已采用版本" : "采用这个版本"}</button><button onClick={() => { setEditValue(activeCandidate.proposedText || ""); setEditing((value) => !value); }}>{editing ? "取消改写" : "自己改写"}</button><button onClick={keepOriginal}>保留原文</button></div>
+          <div className="candidate-actions"><button className="primary" onClick={() => choose(activeCandidate, editing ? editValue : (selectedDraft ?? activeCandidate.proposedText))}>{selectedId === activeCandidate.skillId ? "更新已采用版本" : "采用这个版本"}</button><button onClick={() => { setEditValue(selectedDraft ?? activeCandidate.proposedText ?? ""); setEditing((value) => !value); }}>{editing ? "取消改写" : "自己改写"}</button><button onClick={keepOriginal}>保留原文</button></div>
         </article>}
         {!activeCandidate && activeSkillId && <article className="candidate-detail candidate-detail-empty">
           <header><span><small>CODEX HOST / NO CHANGE</small><strong>{activeSkillId}</strong></span><b>保留原文</b></header>

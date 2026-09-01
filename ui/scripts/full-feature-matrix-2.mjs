@@ -448,6 +448,10 @@ async function testThreeSkillClosure(page, files) {
       const editor = page.getByLabel("修改这条建议");
       await editor.fill(`${await editor.inputValue()} [verified edit]`);
       await page.getByRole("button", { name: "采用这个版本" }).click();
+      assert((await page.locator(".candidate-detail > p").innerText()).endsWith("[verified edit]"), "自己改写后比较卡片没有同步最终文本");
+      await page.getByRole("button", { name: "下一段" }).click();
+      await page.getByRole("button", { name: "上一段" }).click();
+      assert((await page.locator(".candidate-detail > p").innerText()).endsWith("[verified edit]"), "离开区块再返回后自己改写内容丢失");
     } else if (blockIndex === 1) {
       await page.getByRole("button", { name: "保留原文" }).click();
     } else {
